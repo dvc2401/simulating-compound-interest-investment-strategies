@@ -5,16 +5,62 @@ import plotly.graph_objects as go
 import numpy as np
 
 st.set_page_config(page_title="Mô phỏng đầu tư", layout="wide")
+st.markdown("""
+<style>
 
-st.title("📈 MÔ PHỎNG CHIẾN LƯỢC ĐẦU TƯ LÃI KÉP")
+/* Nền chính */
+.stApp {
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+}
+
+/* Tiêu đề lớn */
+.main-title {
+    font-size: 40px;
+    font-weight: bold;
+    color: #FFD700;
+    text-align: center;
+}
+
+/* Box hiển thị số */
+.metric-box {
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+}
+
+/* Số lớn */
+.big-number {
+    font-size: 28px;
+    font-weight: bold;
+    color: #00FF99;
+}
+
+/* Nội dung mô tả */
+.description {
+    font-size: 16px;
+    color: white;
+}
+
+/* Section title */
+.section-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #FFD700;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown('<div class="main-title">📈 XÂY DỰNG HỆ THỐNG MÔ PHỎNG CHIẾN LƯỢC ĐẦU TƯ TÀI CHÍNH BẰNG LÃI KÉP</div>', unsafe_allow_html=True)
 
 # ===== NHẬP DỮ LIỆU =====
 st.sidebar.header("Nhập thông tin đầu tư")
 
 von_ban_dau = st.sidebar.number_input("Vốn ban đầu (VND)", value=10000000)
-lai_suat = st.sidebar.number_input("Lãi suất năm (%)", value=7.0) / 100
-so_nam = st.sidebar.number_input("Số năm đầu tư", min_value=1, max_value=50, value=10)
-gui_them_thang = st.sidebar.number_input("Gửi thêm mỗi tháng (VND)", value=2000000)
+lai_suat = st.sidebar.number_input("Lãi suất năm (%)", value=5.0) / 100
+so_nam = st.sidebar.number_input("Số năm đầu tư", min_value=1, max_value=50, value=5)
+gui_them_thang = st.sidebar.number_input("Gửi thêm mỗi tháng (VND)", value=1000000)
 do_bien_dong = st.sidebar.slider("Độ biến động năm (%)", 5, 40, 20) /100
 lam_phat = st.sidebar.number_input("Lạm phát năm (%)", value=3.0) / 100
 so_lan_mo_phong = 1000
@@ -74,25 +120,76 @@ xac_suat_loi = so_lan_loi / so_lan_mo_phong * 100
 p5 = sorted(ket_qua)[int(0.05*so_lan_mo_phong)]
 p95 = sorted(ket_qua)[int(0.95*so_lan_mo_phong)]
 
-st.metric("P5 (5% xấu nhất)", f"{round(p5,0):,.0f} VND")
-st.metric("P95 (5% tốt nhất)", f"{round(p95,0):,.0f} VND")
+loi_nhuan_tb = trung_binh - tong_von_bo_vao
+ty_suat_loi_tb = (loi_nhuan_tb / tong_von_bo_vao) * 100
 
 # ===== HIỂN THỊ KẾT QUẢ =====
-st.subheader("📊 Kết quả Monte Carlo (1000 lần mô phỏng)")
 
-col1, col2, col3 = st.columns(3)
-col1.metric("💰 Trung bình", f"{round(trung_binh,0):,.0f} VND")
-col2.metric("🚀 Tốt nhất", f"{round(tot_nhat,0):,.0f} VND")
-col3.metric("⚠️ Xấu nhất", f"{round(xau_nhat,0):,.0f} VND")
-col4, col5, col6 = st.columns(3)
-col4.metric("📈 Xác suất lời", f"{round(xac_suat_loi,2)} %")
-col5.metric("🔻 P5 (5% xấu nhất)", f"{round(p5,0):,.0f} VND")
-col6.metric("🔺 P95 (5% tốt nhất)", f"{round(p95,0):,.0f} VND")
+st.markdown(
+    "<h2 style='color:white;'>📊 Tổng quan đầu tư</h2>",
+    unsafe_allow_html=True
+)
+
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+    st.markdown(f"""
+    <div class="metric-box">
+        <div class="section-title">📈 Xác suất sinh lời</div>
+        <div class="big-number">{round(xac_suat_loi,1)}%</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col2:
+
+    if ty_suat_loi_tb >= 0:
+        delta_color = "#00FF88"
+        delta_icon = "▲"
+        delta_sign = "+"
+    else:
+        delta_color = "#FF4B4B"
+        delta_icon = "▼"
+        delta_sign = ""
+
+    st.markdown(f"""
+    <div class="metric-box">
+        <div class="section-title">💰 Giá trị trung bình</div>
+        <div class="big-number">{round(trung_binh,0):,.0f} VND</div>
+        <div style="
+            margin-top:10px;
+            font-size:18px;
+            font-weight:bold;
+            color:{delta_color};
+        ">
+            {delta_icon} {delta_sign}{round(ty_suat_loi_tb,2)}%
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col3:
+    st.markdown(f"""
+    <div class="metric-box">
+        <div class="section-title">🔻 Rủi ro thấp (P5)</div>
+        <div class="big-number">{p5:,.0f} VND</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col4:
+    st.markdown(f"""
+    <div class="metric-box">
+        <div class="section-title">🚀 Tiềm năng cao (P95)</div>
+        <div class="big-number">{p95:,.0f} VND</div>
+    </div>
+    """, unsafe_allow_html=True)
+if do_bien_dong < 0.15:
+    st.success("📗 Mức rủi ro: Thấp")
+elif do_bien_dong < 0.25:
+    st.warning("📙 Mức rủi ro: Trung bình")
+else:
+    st.error("📕 Mức rủi ro: Cao")
 
 # ===== VẼ BIỂU ĐỒ =====
 data1 = [x/1_000_000 for x in mean_path]
-data2 = [x/1_000_000 for x in mean_path]
-data3 = [x/1_000_000 for x in mean_path]
 
 thang_list = list(range(1, len(data1)+1))
 
@@ -111,7 +208,7 @@ for path in all_paths[:1000]:
 fig.add_trace(go.Scatter(
     y=[x/1_000_000 for x in mean_path],
     mode='lines',
-    line=dict(width=4, color='blue'),
+    line=dict(width=4, color='#00BFFF'),
     name='Trung bình'
 ))
 
@@ -143,7 +240,7 @@ fig.add_trace(go.Scatter(
     y=[x/1_000_000 for x in p5_path],
     mode='lines',
     fill='tonexty',
-    fillcolor='rgba(255,0,0,0.2)',
+    fillcolor='rgba(255,165,0,0.2)',
     line=dict(width=0),
     name='Vùng rủi ro'
 ))
@@ -152,7 +249,34 @@ fig.update_layout(
     xaxis_title="Tháng",
     yaxis_title="Số tiền (Triệu VND)"
 )
+fig.update_layout(
+    template="plotly_dark",
+    hovermode="x unified",
+    legend=dict(
+        orientation="h",
+        yanchor="bottom",
+        y=1.02,
+        xanchor="right",
+        x=1
+    )
+)
+fig.update_layout(
+    font=dict(color="white"),
+    paper_bgcolor="#0E1117",
+    plot_bgcolor="#0E1117",
+)
 
+fig.update_xaxes(
+    color="white",
+    showgrid=True,
+    gridcolor="rgba(255,255,255,0.1)"
+)
+
+fig.update_yaxes(
+    color="white",
+    showgrid=True,
+    gridcolor="rgba(255,255,255,0.1)"
+)
 st.plotly_chart(fig, use_container_width=True)
 
 fig2 = px.histogram(
@@ -181,7 +305,52 @@ fig2.add_vline(
     annotation_text="P95",
     annotation_position="top right"
 )
+fig2.update_layout(
+    template="plotly_dark",
+    font=dict(color="white"),
+    paper_bgcolor="#0E1117",
+    plot_bgcolor="#0E1117",
+    hovermode="x unified"
+)
 
+fig2.update_xaxes(
+    color="white",
+    showgrid=True,
+    gridcolor="rgba(255,255,255,0.1)"
+)
+
+fig2.update_yaxes(
+    color="white",
+    showgrid=True,
+    gridcolor="rgba(255,255,255,0.1)"
+)
 st.plotly_chart(fig2, use_container_width=True)
+st.markdown(
+f"""
+<div style="
+    background-color:#1E1E1E;
+    padding:25px;
+    border-radius:15px;
+    color:white;
+    margin-top:30px;
+">
+
+<h3 style="margin-top:0;">🧠 Nhận định mô phỏng</h3>
+
+Với mức lợi suất <b>{lai_suat*100:.1f}%</b> 
+và độ biến động <b>{do_bien_dong*100:.0f}%</b>, 
+xác suất sinh lời đạt 
+<span style="color:#00FFAA; font-weight:bold;">
+{round(xac_suat_loi,1)}%
+</span>, 
+khoảng 90% kết quả nằm trong vùng từ 
+<b>{round(p5/1e6)} triệu</b> đến 
+<b>{round(p95/1e6)} triệu VND</b>.
+
+</div>
+""",
+unsafe_allow_html=True
+)
+
 
 
