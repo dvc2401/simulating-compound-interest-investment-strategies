@@ -196,20 +196,33 @@ thang_list = list(range(1, len(data1)+1))
 fig = go.Figure()
 
 # vẽ 1000 đường đầu cho nhẹ máy
-for path in all_paths[:1000]:
+for i, path in enumerate(all_paths[:1000]):
     fig.add_trace(go.Scatter(
+        x=thang_list,
         y=[x/1_000_000 for x in path],
         mode='lines',
         line=dict(width=1),
         opacity=0.2,
-        showlegend=False
+        name=f"Trace {i}",
+        showlegend=False,
+        hovertemplate=
+            "Trace: %{fullData.name}<br>" +
+            "Tháng: %{x}<br>" +
+            "Giá trị: %{y:,.2f} triệu VND" +
+            "<extra></extra>"
     ))
 # ===== VẼ ĐƯỜNG TRUNG BÌNH =====
 fig.add_trace(go.Scatter(
+    x=thang_list,   # thêm dòng này
     y=[x/1_000_000 for x in mean_path],
     mode='lines',
     line=dict(width=4, color='#00BFFF'),
-    name='Trung bình'
+    name='Trung bình',
+    hovertemplate=
+        "Trung bình<br>" +
+        "Tháng: %{x}<br>" +
+        "Giá trị: %{y:,.2f} triệu VND" +
+        "<extra></extra>"
 ))
 
 # ===== VẼ P5 =====
@@ -245,7 +258,13 @@ fig.add_trace(go.Scatter(
     name='Vùng rủi ro'
 ))
 fig.update_layout(
-    title="Monte Carlo Simulation (1000 đường mô phỏng)",
+    title=dict(
+        text="Monte Carlo Simulation (1000 đường mô phỏng)",
+        font=dict(
+            size=24,
+            color="#FFD700"
+        ),
+    ),
     xaxis_title="Tháng",
     yaxis_title="Số tiền (Triệu VND)"
 )
@@ -264,6 +283,9 @@ fig.update_layout(
     font=dict(color="white"),
     paper_bgcolor="#0E1117",
     plot_bgcolor="#0E1117",
+    xaxis=dict(
+        rangeslider=dict(visible=True)
+    )
 )
 
 fig.update_xaxes(
@@ -278,12 +300,21 @@ fig.update_yaxes(
     gridcolor="rgba(255,255,255,0.1)"
 )
 st.plotly_chart(fig, use_container_width=True)
-
 fig2 = px.histogram(
     ket_qua,
     nbins=50,
     title="Phân phối kết quả sau mô phỏng Monte Carlo",
     labels={"value": "Giá trị cuối kỳ (VND)"}
+)
+fig2.update_layout(
+    title=dict(
+        text="Phân phối kết quả sau mô phỏng Monte Carlo",
+        font=dict(
+            size=24,
+            color="#FFD700"
+        ),
+    ),
+    font=dict(color="white")
 )
 
 # Thêm đường P5
@@ -351,6 +382,3 @@ khoảng 90% kết quả nằm trong vùng từ
 """,
 unsafe_allow_html=True
 )
-
-
-
